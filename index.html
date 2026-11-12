@@ -95,6 +95,8 @@ iframe.tool{display:block;width:100%;height:100%;border:0;background:var(--bg)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 
 /* feedback */
+.fb input[type=text]{font:inherit;font-weight:400;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:7px;padding:8px 10px;width:100%;min-width:0}
+.fb .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .inbox-head{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
 .inbox-head .sum{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .inbox-head .tools{margin-left:auto;display:flex;align-items:center;gap:10px}
@@ -212,6 +214,10 @@ table.fbsheet{border-collapse:collapse;width:100%;min-width:560px;font-size:13px
               </div>
             </fieldset>
           </div>
+          <label class="f" for="fbName" id="fbNameRow" hidden>Your name (optional)
+            <input type="text" id="fbName" maxlength="100" autocomplete="name">
+          </label>
+          <input type="text" id="fbWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
           <label class="f" for="fbText">Your feedback
             <textarea id="fbText" maxlength="2000" placeholder="What worked, what didn't, what you'd like added"></textarea>
           </label>
@@ -308,9 +314,15 @@ let db=null,user=null,me=null,locked=false;
 function status(t,cls){st.textContent=t;st.className='fb-status'+(cls?' '+cls:'')}
 function lock(t){locked=true;send.disabled=true;status(t)}
 send.disabled=true;status('Connecting\u2026');
+/* Outside claude.ai (e.g. your own Vercel site), feedback goes to a Google Sheet through a Google Apps Script
+   web app. Paste that web app's URL (it ends in /exec) between the quotes below. */
+const SHEET_URL='';
+let mode='claude';
 const C=window.claude;
-if(!C||typeof C.use!=='function'){lock('Feedback can only be sent from the published workbench on claude.ai.');return}
-Promise.all([C.use('db'),C.use('user')]).then(async([d,u])=>{
+if(!C||typeof C.use!=='function'){
+  if(/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(SHEET_URL)){mode='sheet';$('#fbNameRow').hidden=false;send.disabled=false;status('')}
+  else lock('Feedback is not set up on this site yet.');
+}else Promise.all([C.use('db'),C.use('user')]).then(async([d,u])=>{
   db=d;user=u;
   if(!db){lock('Sign in to claude.ai to send feedback.');return}
   me=user?await user.id():null;
@@ -321,8 +333,24 @@ Promise.all([C.use('db'),C.use('user')]).then(async([d,u])=>{
   if(user&&await user.canEdit())openInbox();
 }).catch(()=>lock('Feedback is unavailable right now.'));
 
+async function sendToSheet(){
+  const text=$('#fbText').value.trim();
+  if(!text){status('Write a few words first.','bad');$('#fbText').focus();return}
+  const r=form.querySelector('input[name="fbRate"]:checked');
+  send.disabled=true;status('Sending\u2026');
+  try{
+    const res=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({name:$('#fbName').value.trim().slice(0,100),rating:r?+r.value:null,text:text.slice(0,2000),page:location.href.slice(0,200),website:$('#fbWebsite').value})});
+    const j=await res.json().catch(()=>null);
+    if(!res.ok||!j||!j.ok)throw new Error('bad');
+    form.reset();status('Thanks! Your feedback was sent.','ok');
+  }catch(err){status('Could not send it. Check your connection and try again.','bad')}
+  finally{send.disabled=false}
+}
 form.addEventListener('submit',async e=>{
-  e.preventDefault();if(locked||!db||!me)return;
+  e.preventDefault();if(locked)return;
+  if(mode==='sheet'){sendToSheet();return}
+  if(!db||!me)return;
   const text=$('#fbText').value.trim();
   if(!text){status('Write a few words first.','bad');$('#fbText').focus();return}
   const r=form.querySelector('input[name="fbRate"]:checked');
