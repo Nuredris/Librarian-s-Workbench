@@ -496,7 +496,7 @@ const $=id=>document.getElementById(id);
 
 /* ---------- state ---------- */
 let S;
-function freshState(){return{cleanSa:true,design:clone(DEFAULT_DESIGN),page:clone(DEFAULT_PAGE),books:sampleBooks()}}
+function freshState(){return{cleanSa:true,design:clone(DEFAULT_DESIGN),page:clone(DEFAULT_PAGE),books:[]}}
 function sampleBooks(){return EXAMPLES.map(r=>({id:uid(),values:{author:r[0],title:r[1],acc:r[2]},copies:1,example:true,imported:true}))}
 const effCopies=b=>b.imported?1:Math.max(0,Math.min(999,b.copies|0));
 function accFieldId(){const f=S.design.fields.find(f=>f.id==='acc')||S.design.fields.find(f=>SYN.acc.includes(norm(f.label)));return f?f.id:null}
@@ -508,7 +508,7 @@ function persistNow(){clearTimeout(saveT);saveT=null;try{localStorage.setItem('b
 function persist(){clearTimeout(saveT);saveT=setTimeout(persistNow,400)}
 window.addEventListener('pagehide',()=>{if(saveT)persistNow()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&saveT)persistNow()});
-S=load()||freshState();
+S=load()||freshState();if(Array.isArray(S.books)&&S.books.length&&S.books.every(b=>b.example))S.books=[];
 const UI={tab:'books',view:'card',card:0,sheet:0,focus:null,sel:new Set(),search:'',seriesOpen:false};
 
 /* ---------- text measuring & fitting ---------- */
