@@ -511,7 +511,7 @@ function build(rec){
     const numParts=N.split(/(?=\.[A-Z])/); // 76.73 | .P98
     const authorM=mark?(!hasTopical&&dotPref.lc?'.':'')+mark:'';
     lines=[loc&&{t:loc,c:'loc'},(L||N)&&{t:[L,N].filter(Boolean).join(' '),c:'',pre:L.length,pc:$('#lcColor').value},authorM&&{t:authorM},yr&&{t:yr},vol&&{t:vol},cp&&{t:cp}].filter(Boolean);
-    flat=[loc,L+(L&&N?' ':'')+N+(hasTopical&&authorM?' '+authorM:authorM),yr,vol,cp].filter(Boolean).join(' ');
+    flat=[loc,L+(L&&N?' ':'')+N,authorM,yr,vol,cp].filter(Boolean).join(' ');
   }
   return {res,mark,lines,flat};
 }
