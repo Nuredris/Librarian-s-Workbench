@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Librarian's Workbench</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -95,6 +95,28 @@ iframe.tool{display:block;width:100%;height:100%;border:0;background:var(--bg)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 
 /* feedback */
+.gf{display:flex;flex-direction:column;gap:12px;min-width:0}
+.gf-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.gf fieldset{border:0;margin:0;padding:0;min-width:0}
+.fb .gf legend,.fb .gf-q{font:500 15px var(--f-body);color:var(--ink);padding:0;margin-bottom:14px}
+.fb .gf-q{margin-bottom:0}
+.gf-stars{display:flex;justify-content:space-around;gap:4px;flex-wrap:nowrap;max-width:520px;margin-inline:auto;width:100%}
+.gf-stars label{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.gf-stars input{position:absolute;opacity:0;pointer-events:none}
+.gf-stars .n{font:400 14px var(--f-body);color:var(--ink)}
+.gf-stars svg{width:30px;height:30px;fill:none;stroke:var(--muted);stroke-width:1.6;stroke-linejoin:round;transition:fill .12s,stroke .12s}
+.gf-stars label:hover svg{stroke:var(--brand-gold)}
+.gf-stars input:focus-visible~svg{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.gf-stars[data-val="1"] label:nth-child(-n+1) svg,.gf-stars[data-val="2"] label:nth-child(-n+2) svg,.gf-stars[data-val="3"] label:nth-child(-n+3) svg,.gf-stars[data-val="4"] label:nth-child(-n+4) svg,.gf-stars[data-val="5"] label:nth-child(-n+5) svg{fill:var(--brand-gold);stroke:var(--brand-gold)}
+.gf-stars .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fb .gf textarea{font:inherit;font-size:14px;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:6px 0;width:100%;min-width:0;resize:none;overflow:hidden;min-height:32px}
+.fb .gf textarea:focus{outline:none;border-bottom:2px solid var(--brand);padding-bottom:5px}
+.fb .gf textarea::placeholder{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.gf-stars svg{transition:none}}
+.gform{display:flex;flex-direction:column;gap:10px;min-width:0}
+.gform iframe{display:block;width:100%;height:min(1000px,85vh);min-height:560px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.gform .gform-open{align-self:flex-start;text-decoration:none}
+.fb-privacy a{color:var(--accent)}
 .fb input[type=text]{font:inherit;font-weight:400;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:7px;padding:8px 10px;width:100%;min-width:0}
 .fb .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .inbox-head{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
@@ -201,36 +223,23 @@ table.fbsheet{border-collapse:collapse;width:100%;min-width:560px;font-size:13px
           <p class="testing">This workbench is still under the testing phase, and your feedback is highly appreciated to spot bugs, data inaccuracies, and possible enhancements.</p>
           <p>You may also suggest any library task that you wish to automate and we'll see if we can develop a tool for it.</p>
         </div>
-        <form id="fbForm" novalidate>
-          <div class="row2">
+        <form class="gf" id="gfForm" novalidate>
+          <div class="gf-card">
             <fieldset>
               <legend>How useful is it?</legend>
-              <div class="stars" role="radiogroup" aria-label="Rating from 1 to 5">
-                <label><input type="radio" name="fbRate" id="fbRate1" value="1"><span>1</span></label>
-                <label><input type="radio" name="fbRate" id="fbRate2" value="2"><span>2</span></label>
-                <label><input type="radio" name="fbRate" id="fbRate3" value="3"><span>3</span></label>
-                <label><input type="radio" name="fbRate" id="fbRate4" value="4"><span>4</span></label>
-                <label><input type="radio" name="fbRate" id="fbRate5" value="5"><span>5</span></label>
-              </div>
+              <div class="gf-stars" id="gfStars"><label for="gfRate1"><input type="radio" name="gfRate" id="gfRate1" value="1"><span class="n">1</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span class="sr">1 out of 5</span></label><label for="gfRate2"><input type="radio" name="gfRate" id="gfRate2" value="2"><span class="n">2</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span class="sr">2 out of 5</span></label><label for="gfRate3"><input type="radio" name="gfRate" id="gfRate3" value="3"><span class="n">3</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span class="sr">3 out of 5</span></label><label for="gfRate4"><input type="radio" name="gfRate" id="gfRate4" value="4"><span class="n">4</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span class="sr">4 out of 5</span></label><label for="gfRate5"><input type="radio" name="gfRate" id="gfRate5" value="5"><span class="n">5</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span class="sr">5 out of 5</span></label></div>
             </fieldset>
           </div>
-          <label class="f" for="fbName" id="fbNameRow" hidden>Your name (optional)
-            <input type="text" id="fbName" maxlength="100" autocomplete="name">
-          </label>
-          <input type="text" id="fbWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <label class="f" for="fbText">Your feedback
-            <textarea id="fbText" maxlength="2000" placeholder="What worked, what didn't, what you'd like added"></textarea>
-          </label>
-          <div class="fb-foot">
-            <button type="submit" class="btn" id="fbSend">Send feedback</button>
-            <span class="fb-status" id="fbStatus" role="status" aria-live="polite"></span>
+          <div class="gf-card">
+            <label class="gf-q" for="gfText">Your feedbacks</label>
+            <textarea id="gfText" rows="1" maxlength="2000" placeholder="Your answer"></textarea>
           </div>
-          <p class="fb-privacy">Only the workbench's owner and editors can read what you send.</p>
+          <input type="text" id="gfWebsite" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="fb-foot">
+            <button type="submit" class="btn" id="gfSend">Send feedback</button>
+            <span class="fb-status" id="gfStatus" role="status" aria-live="polite"></span>
+          </div>
         </form>
-        <div class="inbox" id="fbInbox" hidden>
-          <div class="inbox-head"><h4 id="fbInboxTitle">Feedback sheet</h4><span class="sum" id="fbSum"></span><span class="tools"><span class="fb-status" id="fbXlsxStatus" role="status"></span><button type="button" class="btn ghostb" id="fbXlsx" disabled>Download as Excel (.xlsx)</button></span></div>
-          <div id="fbList"></div>
-        </div>
       </section>
       <p class="note">&copy; 2026 NDE Solutions</p>
     </div>
@@ -306,112 +315,37 @@ show(start);
 </script>
 
 <script>
-/* Feedback: each signed-in person writes their own document under feedback/<id>; owner and editors read them all. */
+/* Feedback: answers are sent to the Google Form behind the scenes.
+   FORM_ID is the form's id; RATE_ENTRY / TEXT_ENTRY are the questions' "entry." codes from the form's pre-filled link. */
 (function(){
+const FORM_ID='1FAIpQLScfg3hS5meVG9sWxcBTJaDLFR_XA4c_TyilhR6QnEjGuVs8pA';
+const RATE_ENTRY='entry.1065409548';   /* e.g. 'entry.1234567890'  (How useful is it?) */
+const TEXT_ENTRY='entry.1141391875';   /* e.g. 'entry.9876543210'  (Your feedbacks) */
 const $=s=>document.querySelector(s);
-const form=$('#fbForm'),send=$('#fbSend'),st=$('#fbStatus');
-let db=null,user=null,me=null,locked=false;
-function status(t,cls){st.textContent=t;st.className='fb-status'+(cls?' '+cls:'')}
-function lock(t){locked=true;send.disabled=true;status(t)}
-send.disabled=true;status('Connecting\u2026');
-/* Outside claude.ai (e.g. your own Vercel site), feedback goes to a Google Sheet through a Google Apps Script
-   web app. Paste that web app's URL (it ends in /exec) between the quotes below. */
-const SHEET_URL='';
-let mode='claude';
-const C=window.claude;
-if(!C||typeof C.use!=='function'){
-  if(/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(SHEET_URL)){mode='sheet';$('#fbNameRow').hidden=false;send.disabled=false;status('')}
-  else lock('Feedback is not set up on this site yet.');
-}else Promise.all([C.use('db'),C.use('user')]).then(async([d,u])=>{
-  db=d;user=u;
-  if(!db){lock('Sign in to claude.ai to send feedback.');return}
-  me=user?await user.id():null;
-  if(!me){lock('Sign in to claude.ai to send feedback.');return}
-  const w=user?await user.can('data.write'):null;
-  if(w===false){lock('Your access to this page is view-only. Ask the owner for Contributor access to send feedback.');return}
-  send.disabled=false;status('');
-  if(user&&await user.canEdit())openInbox();
-}).catch(()=>lock('Feedback is unavailable right now.'));
-
-async function sendToSheet(){
-  const text=$('#fbText').value.trim();
-  if(!text){status('Write a few words first.','bad');$('#fbText').focus();return}
-  const r=form.querySelector('input[name="fbRate"]:checked');
+const form=$('#gfForm'),send=$('#gfSend'),st=$('#gfStatus'),stars=$('#gfStars'),ta=$('#gfText');
+const ready=/^entry\.\d+$/.test(RATE_ENTRY)&&/^entry\.\d+$/.test(TEXT_ENTRY);
+const inClaude=!!(window.claude&&typeof window.claude.use==='function');
+function status(t,c){st.textContent=t;st.className='fb-status'+(c?' '+c:'')}
+stars.addEventListener('change',()=>{const r=form.querySelector('input[name="gfRate"]:checked');stars.dataset.val=r?r.value:''});
+ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'});
+if(!ready){send.disabled=true;status('Feedback is not connected yet.')}
+else if(inClaude){send.textContent='Continue in Google Forms';}
+form.addEventListener('submit',async e=>{
+  e.preventDefault();if(!ready)return;
+  const r=form.querySelector('input[name="gfRate"]:checked'),text=ta.value.trim();
+  if(!r&&!text){status('Pick a rating or write a few words first.','bad');return}
+  if($('#gfWebsite').value){form.reset();status('Thanks! Your feedback was sent.','ok');return}
+  const params=new URLSearchParams();if(r)params.append(RATE_ENTRY,r.value);if(text)params.append(TEXT_ENTRY,text.slice(0,2000));
+  if(inClaude){ /* claude.ai can't send to other sites, so open the form with these answers filled in */
+    params.append('usp','pp_url');const a=document.createElement('a');a.href='https://docs.google.com/forms/d/e/'+FORM_ID+'/viewform?'+params.toString();a.target='_blank';a.rel='noopener';document.body.append(a);a.click();a.remove();
+    status('Your answers are filled in on the Google Form. Press Submit there.');return}
   send.disabled=true;status('Sending\u2026');
   try{
-    const res=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({name:$('#fbName').value.trim().slice(0,100),rating:r?+r.value:null,text:text.slice(0,2000),page:location.href.slice(0,200),website:$('#fbWebsite').value})});
-    const j=await res.json().catch(()=>null);
-    if(!res.ok||!j||!j.ok)throw new Error('bad');
-    form.reset();status('Thanks! Your feedback was sent.','ok');
+    await fetch('https://docs.google.com/forms/d/e/'+FORM_ID+'/formResponse',{method:'POST',mode:'no-cors',body:params});
+    form.reset();stars.dataset.val='';ta.style.height='';status('Thanks! Your feedback was sent.','ok');
   }catch(err){status('Could not send it. Check your connection and try again.','bad')}
   finally{send.disabled=false}
-}
-form.addEventListener('submit',async e=>{
-  e.preventDefault();if(locked)return;
-  if(mode==='sheet'){sendToSheet();return}
-  if(!db||!me)return;
-  const text=$('#fbText').value.trim();
-  if(!text){status('Write a few words first.','bad');$('#fbText').focus();return}
-  const r=form.querySelector('input[name="fbRate"]:checked');
-  const entry={rating:r?+r.value:null,text:text.slice(0,2000),at:new Date().toISOString()};
-  send.disabled=true;status('Sending\u2026');
-  const ref=db.doc('feedback/'+me);
-  const attempt=async()=>{const s=await ref.get();const old=s.exists&&s.data()&&Array.isArray(s.data().entries)?s.data().entries:[];await ref.set({by:me,entries:old.concat(entry).slice(-50),updatedAt:entry.at})};
-  try{
-    try{await attempt()}catch(err){if(err&&err.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*600));await attempt()}else throw err}
-    form.reset();status('Thanks! Your feedback was sent.','ok');send.disabled=false;
-  }catch(err){
-    const c=err&&err.code;
-    if(c==='invalid_argument'){lock('Your access to this page is view-only. Ask the owner for Contributor access to send feedback.');return}
-    status(c==='quota_exceeded'?'The feedback box is full. Let the owner know.':'Could not send it. Try again in a moment.','bad');send.disabled=false;
-  }
 });
-
-function openInbox(){
-  const box=$('#fbInbox'),list=$('#fbList');box.hidden=false;
-  list.innerHTML='';const p=document.createElement('p');p.className='fb-status';p.textContent='Loading feedback…';list.append(p);
-  let got=false,rows=[];const timer=setTimeout(()=>{if(!got)p.textContent='Feedback did not load. Reload the page to try again.'},10000);
-  const xl=$('#fbXlsx'),xs=$('#fbXlsxStatus');
-  db.collection('feedback').onSnapshot(snap=>{got=true;clearTimeout(timer);render(snap.docs)},()=>{got=true;clearTimeout(timer);p.textContent='Feedback did not load. Reload the page to try again.'});
-  const fmt=dt=>isNaN(dt)?'':dt.toLocaleString(undefined,{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
-  async function render(docs){
-    const items=[];docs.forEach(d=>{const v=d.data()||{};(Array.isArray(v.entries)?v.entries:[]).forEach(x=>items.push({by:d.id,...x}))});
-    items.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
-    const ps=items.length?await user.profiles([...new Set(items.map(i=>i.by))]):{};
-    rows=items.map(i=>({date:new Date(i.at),sender:(ps[i.by]&&ps[i.by].name)||'Someone',rating:typeof i.rating==='number'?i.rating:null,text:i.text||''}));
-    const rated=rows.filter(r=>r.rating!=null);
-    $('#fbInboxTitle').textContent='Feedback sheet';
-    $('#fbSum').textContent=rows.length?`${rows.length} ${rows.length===1?'entry':'entries'}`+(rated.length?` · average rating ${(rated.reduce((s,r)=>s+r.rating,0)/rated.length).toFixed(1)} / 5`:''):'';
-    xl.disabled=!rows.length;
-    list.innerHTML='';
-    if(!rows.length){const e=document.createElement('p');e.className='fb-status';e.textContent='No feedback yet. Each one people send is added here as a new row, newest first.';list.append(e);return}
-    const wrap=document.createElement('div');wrap.className='sheetwrap-fb';
-    const t=document.createElement('table');t.className='fbsheet';
-    t.innerHTML='<thead><tr><th class="rn" scope="col"></th><th scope="col">Date</th><th scope="col">Sender</th><th scope="col" class="num">Rating</th><th scope="col">Feedback</th></tr></thead>';
-    const tb=document.createElement('tbody');
-    rows.forEach((r,ix)=>{const tr=document.createElement('tr');
-      [[String(ix+1),'rn'],[fmt(r.date),'dt'],[r.sender,''],[r.rating==null?'':String(r.rating),'num'],[r.text,'msg']].forEach(([v,c])=>{const td=document.createElement('td');if(c)td.className=c;td.textContent=v;tr.append(td)});
-      tb.append(tr)});
-    t.append(tb);wrap.append(t);list.append(wrap);
-  }
-  function loadXLSX(){return window.XLSX?Promise.resolve(window.XLSX):new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=()=>window.XLSX?res(window.XLSX):rej();s.onerror=rej;document.head.append(s)})}
-  xl.addEventListener('click',async()=>{
-    if(!rows.length)return;xl.disabled=true;xs.textContent='Preparing…';
-    try{
-      const X=await loadXLSX();
-      const aoa=[['Date','Sender','Rating','Feedback']].concat(rows.map(r=>[isNaN(r.date)?'':r.date,r.sender,r.rating==null?'':r.rating,r.text]));
-      const ws=X.utils.aoa_to_sheet(aoa,{cellDates:true});ws['!cols']=[{wch:20},{wch:24},{wch:8},{wch:80}];
-      const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,'Feedback');
-      const data=X.write(wb,{bookType:'xlsx',type:'array',cellDates:true});
-      const dl=await window.claude.use('downloads');
-      if(!dl){xs.textContent='Downloads are not available in this view.';return}
-      await dl.save({filename:'workbench-feedback-'+new Date().toISOString().slice(0,10)+'.xlsx',data:new Uint8Array(data)});
-      xs.textContent='Saved.';
-    }catch(e){xs.textContent=e&&e.code==='declined'?'':'Could not make the file. Try again.'}
-    finally{xl.disabled=!rows.length}
-  });
-}
 })();
 </script>
 
