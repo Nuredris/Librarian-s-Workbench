@@ -95,6 +95,22 @@ iframe.tool{display:block;width:100%;height:100%;border:0;background:var(--bg)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 
 /* feedback */
+.inbox-head{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
+.inbox-head .sum{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.inbox-head .tools{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn.ghostb{background:var(--panel);color:var(--ink);border-color:var(--line);box-shadow:none;padding:6px 11px;font-size:13px}
+.btn.ghostb:hover{border-color:var(--muted);filter:none}
+.sheetwrap-fb{overflow:auto;max-height:480px;border:1px solid var(--line);border-radius:8px}
+table.fbsheet{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
+.fbsheet th{position:sticky;top:0;background:var(--field);text-align:left;font:600 12px var(--f-display);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.fbsheet td{padding:7px 10px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top}
+.fbsheet th:last-child,.fbsheet td:last-child{border-right:0}
+.fbsheet tr:last-child td{border-bottom:0}
+.fbsheet .rn{width:1%;text-align:right;color:var(--muted);font:500 12px var(--f-mono);background:var(--field)}
+.fbsheet .dt{white-space:nowrap;font:500 12px var(--f-mono);font-variant-numeric:tabular-nums}
+.fbsheet .num{text-align:right;font-variant-numeric:tabular-nums;width:1%;white-space:nowrap}
+.fbsheet .msg{white-space:pre-wrap;overflow-wrap:anywhere;min-width:240px}
+
 .fb-privacy{margin:0;font-size:12.5px;color:var(--muted)}
 .fb-intro p.testing{margin:0 0 10px;font-weight:700;color:var(--bad);animation:testPulse 1.8s ease-in-out infinite}
 @keyframes testPulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -180,7 +196,7 @@ iframe.tool{display:block;width:100%;height:100%;border:0;background:var(--bg)}
       <section class="fb" id="feedback" aria-label="Feedback">
         <div class="fb-intro">
           <h3>Send feedback</h3>
-          <p class="testing">This workbench is still under the testing phase, and your feedback is highly appreciated to spot bugs, data inaccuracies, and for the future enhancement.</p>
+          <p class="testing">This workbench is still under the testing phase, and your feedback is highly appreciated to spot bugs, data inaccuracies, and possible enhancements.</p>
           <p>You may also suggest any library task that you wish to automate and we'll see if we can develop a tool for it.</p>
         </div>
         <form id="fbForm" novalidate>
@@ -206,7 +222,7 @@ iframe.tool{display:block;width:100%;height:100%;border:0;background:var(--bg)}
           <p class="fb-privacy">Only the workbench's owner and editors can read what you send.</p>
         </form>
         <div class="inbox" id="fbInbox" hidden>
-          <h4 id="fbInboxTitle">Feedback received</h4>
+          <div class="inbox-head"><h4 id="fbInboxTitle">Feedback sheet</h4><span class="sum" id="fbSum"></span><span class="tools"><span class="fb-status" id="fbXlsxStatus" role="status"></span><button type="button" class="btn ghostb" id="fbXlsx" disabled>Download as Excel (.xlsx)</button></span></div>
           <div id="fbList"></div>
         </div>
       </section>
@@ -326,27 +342,47 @@ form.addEventListener('submit',async e=>{
 
 function openInbox(){
   const box=$('#fbInbox'),list=$('#fbList');box.hidden=false;
-  list.innerHTML='';const p=document.createElement('p');p.className='fb-status';p.textContent='Loading feedback\u2026';list.append(p);
-  let got=false;const timer=setTimeout(()=>{if(!got)p.textContent='Feedback did not load. Reload the page to try again.'},10000);
+  list.innerHTML='';const p=document.createElement('p');p.className='fb-status';p.textContent='Loading feedback…';list.append(p);
+  let got=false,rows=[];const timer=setTimeout(()=>{if(!got)p.textContent='Feedback did not load. Reload the page to try again.'},10000);
+  const xl=$('#fbXlsx'),xs=$('#fbXlsxStatus');
   db.collection('feedback').onSnapshot(snap=>{got=true;clearTimeout(timer);render(snap.docs)},()=>{got=true;clearTimeout(timer);p.textContent='Feedback did not load. Reload the page to try again.'});
+  const fmt=dt=>isNaN(dt)?'':dt.toLocaleString(undefined,{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
   async function render(docs){
     const items=[];docs.forEach(d=>{const v=d.data()||{};(Array.isArray(v.entries)?v.entries:[]).forEach(x=>items.push({by:d.id,...x}))});
     items.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
-    $('#fbInboxTitle').textContent=items.length?`Feedback received (${items.length})`:'Feedback received';
     const ps=items.length?await user.profiles([...new Set(items.map(i=>i.by))]):{};
+    rows=items.map(i=>({date:new Date(i.at),sender:(ps[i.by]&&ps[i.by].name)||'Someone',rating:typeof i.rating==='number'?i.rating:null,text:i.text||''}));
+    const rated=rows.filter(r=>r.rating!=null);
+    $('#fbInboxTitle').textContent='Feedback sheet';
+    $('#fbSum').textContent=rows.length?`${rows.length} ${rows.length===1?'entry':'entries'}`+(rated.length?` · average rating ${(rated.reduce((s,r)=>s+r.rating,0)/rated.length).toFixed(1)} / 5`:''):'';
+    xl.disabled=!rows.length;
     list.innerHTML='';
-    if(!items.length){const e=document.createElement('p');e.className='fb-status';e.textContent='No feedback yet. Anything people send appears here, newest first.';list.append(e);return}
-    list.style.cssText='display:flex;flex-direction:column;gap:8px';
-    items.forEach(i=>{
-      const el=document.createElement('div');el.className='fbi';
-      const who=document.createElement('div');who.className='who';who.textContent=(ps[i.by]&&ps[i.by].name)||'Someone';
-      const tag=document.createElement('span');tag.className='tag';if(i.tool){tag.textContent=' \u00b7 '+i.tool;who.append(tag)}
-      const meta=document.createElement('div');meta.className='meta';const dt=new Date(i.at);
-      meta.textContent=(i.rating?i.rating+'/5 \u00b7 ':'')+(isNaN(dt)?'':dt.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}));
-      const msg=document.createElement('div');msg.className='msg';msg.textContent=i.text||'';
-      el.append(who,meta,msg);list.append(el);
-    });
+    if(!rows.length){const e=document.createElement('p');e.className='fb-status';e.textContent='No feedback yet. Each one people send is added here as a new row, newest first.';list.append(e);return}
+    const wrap=document.createElement('div');wrap.className='sheetwrap-fb';
+    const t=document.createElement('table');t.className='fbsheet';
+    t.innerHTML='<thead><tr><th class="rn" scope="col"></th><th scope="col">Date</th><th scope="col">Sender</th><th scope="col" class="num">Rating</th><th scope="col">Feedback</th></tr></thead>';
+    const tb=document.createElement('tbody');
+    rows.forEach((r,ix)=>{const tr=document.createElement('tr');
+      [[String(ix+1),'rn'],[fmt(r.date),'dt'],[r.sender,''],[r.rating==null?'':String(r.rating),'num'],[r.text,'msg']].forEach(([v,c])=>{const td=document.createElement('td');if(c)td.className=c;td.textContent=v;tr.append(td)});
+      tb.append(tr)});
+    t.append(tb);wrap.append(t);list.append(wrap);
   }
+  function loadXLSX(){return window.XLSX?Promise.resolve(window.XLSX):new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=()=>window.XLSX?res(window.XLSX):rej();s.onerror=rej;document.head.append(s)})}
+  xl.addEventListener('click',async()=>{
+    if(!rows.length)return;xl.disabled=true;xs.textContent='Preparing…';
+    try{
+      const X=await loadXLSX();
+      const aoa=[['Date','Sender','Rating','Feedback']].concat(rows.map(r=>[isNaN(r.date)?'':r.date,r.sender,r.rating==null?'':r.rating,r.text]));
+      const ws=X.utils.aoa_to_sheet(aoa,{cellDates:true});ws['!cols']=[{wch:20},{wch:24},{wch:8},{wch:80}];
+      const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,'Feedback');
+      const data=X.write(wb,{bookType:'xlsx',type:'array',cellDates:true});
+      const dl=await window.claude.use('downloads');
+      if(!dl){xs.textContent='Downloads are not available in this view.';return}
+      await dl.save({filename:'workbench-feedback-'+new Date().toISOString().slice(0,10)+'.xlsx',data:new Uint8Array(data)});
+      xs.textContent='Saved.';
+    }catch(e){xs.textContent=e&&e.code==='declined'?'':'Could not make the file. Try again.'}
+    finally{xl.disabled=!rows.length}
+  });
 }
 })();
 </script>
